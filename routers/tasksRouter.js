@@ -12,7 +12,7 @@ router.get("/", middleware, async (req, res) => {
   }
 });
 
-router.post("/", middleware, async (re1, res) => {
+router.post("/", middleware, async (req, res) => {
   try {
     const task = new schema.Task({ ...req.body, user: req.user._id });
     await task.save();
@@ -22,8 +22,34 @@ router.post("/", middleware, async (re1, res) => {
   }
 });
 
-router.put("/:id", middleware, (req, res) => {});
+router.put("/:id", middleware, async (req, res) => {
+  try {
+    const task = await schema.Task.updateOne(
+      {
+        user: req.user._id,
+        _id: req.params.id,
+      },
+      {
+        ...req.body,
+        user: req.user._id,
+      }
+    );
+    res.send(task);
+  } catch (error) {
+    res.status(400).send(error);
+  }
+});
 
-router.delete("/:id", middleware, (req, res) => {});
+router.delete("/:id", middleware, async (req, res) => {
+  try {
+    const task = await schema.Task.findOneAndRemove({
+      user: req.user._id,
+      _id: req.params.id,
+    });
+    res.send(task);
+  } catch (error) {
+    res.status(400).send(error);
+  }
+});
 
 module.exports = router;
